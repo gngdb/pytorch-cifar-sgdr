@@ -10,6 +10,7 @@ import torch.backends.cudnn as cudnn
 import torchvision
 import torchvision.transforms as transforms
 
+import math
 import os
 import argparse
 
@@ -20,6 +21,7 @@ from torch.autograd import Variable
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+parser.add_argument('--lr_period', default=30, type=float, help='learning rate schedule restart period')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 args = parser.parse_args()
 
@@ -78,16 +80,39 @@ if use_cuda:
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 
+def set_optimizer_lr(optimizer, lr):
+    # callback to set the learning rate in an optimizer, without rebuilding the whole optimizer
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+    return optimizer
+
+def sgdr(period, batch_idx):
+    # returns normalised anytime sgdr schedule given period and batch_idx
+    # best performing settings reported in paper are T_0 = 10, T_mult=2
+    # so always use T_mult=2
+    batch_idx = float(batch_idx)
+    restart_period = period
+    while batch_idx/restart_period > 1.:
+        batch_idx = batch_idx - restart_period
+        restart_period = restart_period * 2.
+
+    radians = math.pi*(batch_idx/restart_period)
+    return 0.5*(1.0 + math.cos(radians))
+
 # Training
 def train(epoch):
     print('\nEpoch: %d' % epoch)
     net.train()
+    global optimizer
+    start_batch_idx = len(trainloader)*epoch
     train_loss = 0
     correct = 0
     total = 0
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         if use_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
+        batch_lr = args.lr*sgdr(args.lr_period, batch_idx+start_batch_idx)
+        optimizer = set_optimizer_lr(optimizer, batch_lr)
         optimizer.zero_grad()
         inputs, targets = Variable(inputs), Variable(targets)
         outputs = net(inputs)
@@ -100,8 +125,8 @@ def train(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
 
-        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-            % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d) | LR: %.3f'
+            % (train_loss/(batch_idx+1), 100.*correct/total, correct, total, batch_lr))
 
 def test(epoch):
     global best_acc
