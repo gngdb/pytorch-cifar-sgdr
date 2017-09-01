@@ -51,6 +51,8 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False,
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
+lr_period = args.lr_period*len(trainloader)
+
 # Model
 if args.resume:
     # Load checkpoint.
@@ -63,14 +65,14 @@ if args.resume:
 else:
     print('==> Building model..')
     # net = VGG('VGG19')
-    # net = ResNet18()
+    net = ResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
     # net = ResNeXt29_2x64d()
     # net = MobileNet()
     # net = DPN92()
     # net = ShuffleNetG2()
-    net = SENet18()
+    # net = SENet18()
 
 if use_cuda:
     net.cuda()
@@ -111,7 +113,7 @@ def train(epoch):
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         if use_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
-        batch_lr = args.lr*sgdr(args.lr_period, batch_idx+start_batch_idx)
+        batch_lr = args.lr*sgdr(lr_period, batch_idx+start_batch_idx)
         optimizer = set_optimizer_lr(optimizer, batch_lr)
         optimizer.zero_grad()
         inputs, targets = Variable(inputs), Variable(targets)
