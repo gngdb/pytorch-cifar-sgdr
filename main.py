@@ -18,10 +18,28 @@ from models import *
 from utils import progress_bar
 from torch.autograd import Variable
 
+try:
+    from bashplotlib.scatterplot import plot_scatter
+
+    def scatter(yvals):
+        import numpy as np
+        
+        xvals = np.arange(len(yvals))
+        yvals = np.array(yvals)
+        csv = np.hstack([xvals[:,np.newaxis], yvals[:,np.newaxis]])
+
+        np.savetxt('bashplot.txt', csv, delimiter=',')
+        
+        plot_scatter('bashplot.txt', None, None, 40, 'o', 'default', 'Learning Rate Schedule')
+
+        os.remove('bashplot.txt')
+    can_plot = True
+except ImportError:
+    can_plot = False
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
-parser.add_argument('--lr_period', default=30, type=float, help='learning rate schedule restart period')
+parser.add_argument('--lr', default=0.2, type=float, help='learning rate')
+parser.add_argument('--lr_period', default=10, type=float, help='learning rate schedule restart period')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 args = parser.parse_args()
 
@@ -101,6 +119,7 @@ def sgdr(period, batch_idx):
     radians = math.pi*(batch_idx/restart_period)
     return 0.5*(1.0 + math.cos(radians))
 
+lr_trace = []
 # Training
 def train(epoch):
     print('\nEpoch: %d' % epoch)
@@ -114,6 +133,7 @@ def train(epoch):
         if use_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
         batch_lr = args.lr*sgdr(lr_period, batch_idx+start_batch_idx)
+        lr_trace.append(batch_lr)
         optimizer = set_optimizer_lr(optimizer, batch_lr)
         optimizer.zero_grad()
         inputs, targets = Variable(inputs), Variable(targets)
@@ -169,3 +189,5 @@ def test(epoch):
 for epoch in range(start_epoch, start_epoch+200):
     train(epoch)
     test(epoch)
+    if can_plot:
+        scatter(lr_trace)
