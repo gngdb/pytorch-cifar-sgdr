@@ -19,3 +19,4 @@ on ResNet18 and 93.99%.
 | [ResNet18(pre-act)](https://arxiv.org/abs/1603.05027) | 95.11%      | ? |
 | [DPN92](https://arxiv.org/abs/1707.01629)             | 95.16%      | ? |
 
+[sgdr]: https://arxiv.org/abs/1608.03983
