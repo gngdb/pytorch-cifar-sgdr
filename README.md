@@ -10,8 +10,8 @@ on ResNet18 and 93.99%.
 | Model             | Acc. Before | SGDR Acc. |
 | ----------------- | ----------- | --------- |
 | [VGG16](https://arxiv.org/abs/1409.1556)             | 92.64%      | ? |
-| [ResNet18](https://arxiv.org/abs/1512.03385)          | 93.02%      | 93.99 % |
-| [ResNet50](https://arxiv.org/abs/1512.03385)          | 93.62%      | ? |
+| [ResNet18](https://arxiv.org/abs/1512.03385)          | 93.02%      | [93.99 %][resnet18] |
+| [ResNet50](https://arxiv.org/abs/1512.03385)          | 93.62%      | [94.25 %][resnet50] |
 | [ResNet101](https://arxiv.org/abs/1512.03385)         | 93.75%      | ? |
 | [ResNeXt29(32x4d)](https://arxiv.org/abs/1611.05431)  | 94.73%      | ? |
 | [ResNeXt29(2x64d)](https://arxiv.org/abs/1611.05431)  | 94.82%      | ? |
@@ -19,3 +19,5 @@ on ResNet18 and 93.99%.
 | [ResNet18(pre-act)](https://arxiv.org/abs/1603.05027) | 95.11%      | ? |
 | [DPN92](https://arxiv.org/abs/1707.01629)             | 95.16%      | ? |
 
+[resnet18]: https://drive.google.com/open?id=0B-oKfSEpoIPHR0hnRWtoTTdaUkk
+[resnet50]: https://drive.google.com/open?id=0B-oKfSEpoIPHbS1FNG9PcnBHZWM

@@ -41,6 +41,8 @@ parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.2, type=float, help='learning rate')
 parser.add_argument('--lr_period', default=10, type=float, help='learning rate schedule restart period')
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
+parser.add_argument('--plot', '-p', action='store_true', help='plot the learning rate')
+parser.add_argument('--save', '-s', action='store_true', help='save best performing state dict')
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
@@ -189,5 +191,7 @@ def test(epoch):
 for epoch in range(start_epoch, start_epoch+200):
     train(epoch)
     test(epoch)
-    if can_plot:
+    if can_plot and args.plot:
         scatter(lr_trace)
+    if args.save:
+        torch.save(net.module.state_dict(), 'checkpoint/best.pth')
