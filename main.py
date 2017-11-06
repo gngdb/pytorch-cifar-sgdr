@@ -18,6 +18,10 @@ from models import *
 from utils import progress_bar
 from torch.autograd import Variable
 
+#from deep_compression import MaskedSGD
+#SGD = MaskedSGD
+SGD = optim.SGD
+
 try:
     from bashplotlib.scatterplot import plot_scatter
 
@@ -85,7 +89,7 @@ if args.resume:
 else:
     print('==> Building model..')
     # net = VGG('VGG19')
-    net = ResNet18()
+    net = ResNet50()
     # net = GoogLeNet()
     # net = DenseNet121()
     # net = ResNeXt29_2x64d()
@@ -100,7 +104,7 @@ if use_cuda:
     cudnn.benchmark = True
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
+optimizer = SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 
 def set_optimizer_lr(optimizer, lr):
     # callback to set the learning rate in an optimizer, without rebuilding the whole optimizer
@@ -134,7 +138,8 @@ def train(epoch):
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         if use_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
-        batch_lr = args.lr*sgdr(lr_period, batch_idx+start_batch_idx)
+        global_step = batch_idx+start_batch_idx
+        batch_lr = args.lr*sgdr(lr_period, global_step)
         lr_trace.append(batch_lr)
         optimizer = set_optimizer_lr(optimizer, batch_lr)
         optimizer.zero_grad()
@@ -142,6 +147,12 @@ def train(epoch):
         outputs = net(inputs)
         loss = criterion(outputs, targets)
         loss.backward()
+        if len(lr_trace) > 1:
+            if lr_trace[-1] - lr_trace[-2] > 1e-3:
+                # we've just reset the learning rate
+                print("Sparsifying at step %i..."%global_step)
+                optimizer.sparsify()
+                print("Sparsitying is %f"%optimizer.sparsity())
         optimizer.step()
 
         train_loss += loss.data[0]
