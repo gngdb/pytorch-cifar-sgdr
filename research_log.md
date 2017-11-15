@@ -4,7 +4,7 @@
 
 Trained with SGDR, where at each reset of the LR to the maximum we fix
 any weights below 0.02 to zero. This creates a quickly decreasing set of weights.
-Log is shown in `sgdr.deep_compression.train.log`. Although, we lost a relatively 
+ Although, we lost a relatively 
 large amount of the accuracy;  Was 94.25% before sparsification and is 90.39% 
 afterwards. May be able to improve that by lowering the threshold for weight 
 removal, or setting it based on the proportion of weights to remove at each
