@@ -18,9 +18,6 @@ from models import *
 from utils import progress_bar
 from torch.autograd import Variable
 
-#from deep_compression import MaskedSGD
-#SGD = MaskedSGD
-SGD = optim.SGD
 
 try:
     from bashplotlib.scatterplot import plot_scatter
@@ -47,6 +44,7 @@ parser.add_argument('--lr_period', default=10, type=float, help='learning rate s
 parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 parser.add_argument('--plot', '-p', action='store_true', help='plot the learning rate')
 parser.add_argument('--save', '-s', action='store_true', help='saves state_dict on every epoch (for resuming best performing model and saving it)')
+parser.add_argument('--sparsify', action='store_true', help='sparsify on warm restarts')
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
@@ -103,6 +101,14 @@ if use_cuda:
     net = torch.nn.DataParallel(net, device_ids=range(torch.cuda.device_count()))
     cudnn.benchmark = True
 
+
+
+if args.sparsify:
+    from deep_compression import MaskedSGD
+    SGD = MaskedSGD
+else:
+    SGD = optim.SGD
+    
 criterion = nn.CrossEntropyLoss()
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 
@@ -150,8 +156,9 @@ def train(epoch):
         if len(lr_trace) > 1:
             if lr_trace[-1] - lr_trace[-2] > 1e-3:
                 # we've just reset the learning rate
-                print("Sparsifying at step %i..."%global_step)
-                optimizer.sparsify()
+                if args.sparsify:
+                    print("Sparsifying at step %i..."%global_step)
+                    optimizer.sparsify()
                 print("Sparsitying is %f"%optimizer.sparsity())
         optimizer.step()
 
