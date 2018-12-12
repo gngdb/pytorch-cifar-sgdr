@@ -1,3 +1,8 @@
+**Note**: PyTorch has since [implemented learning rate schedulers][ptschedule]. 
+It would be easier to implement SGDR using them, rather than without (as it is done in 
+this repository), although the difference in lines of code is relatively small.
+This repository is redundant, left up just for interest.
+
 # Train CIFAR10 with PyTorch with SGDR
 
 Built from `kuangliu`'s great simple
@@ -22,3 +27,4 @@ on ResNet18 and got 93.99%.
 [resnet18]: https://drive.google.com/open?id=0B-oKfSEpoIPHR0hnRWtoTTdaUkk
 [resnet50]: https://drive.google.com/open?id=0B-oKfSEpoIPHbS1FNG9PcnBHZWM
 [sgdr]: https://arxiv.org/abs/1608.03983
+[ptschedule]: https://pytorch.org/docs/stable/optim.html?highlight=schedule#torch.optim.lr_scheduler.CosineAnnealingLR
