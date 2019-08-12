@@ -8,8 +8,7 @@ This repository is redundant, left up just for interest.
 Built from `kuangliu`'s great simple
 [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar) repository.
 Switches out the manual learning rate scheduling for [SGDR][]. Used the
-anytime schedule reported best in the paper. So far, trained for 147 epochs
-on ResNet18 and got 93.99%.
+anytime schedule reported best in the paper.
 
 ## Accuracy
 | Model             | Acc. Before | SGDR Acc. |
